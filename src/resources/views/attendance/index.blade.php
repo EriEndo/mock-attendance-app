@@ -16,14 +16,14 @@
 
         <div class="attendance-action">
             @if ($status['code'] === 'off')
-            <form action="{{ route('attendance.clock_in') }}" method="POST">
+            <form action="{{ route('attendance.clock_in_at') }}" method="POST">
                 @csrf
                 <button type="submit" class="attendance-btn">出勤</button>
             </form>
 
             @elseif ($status['code'] === 'working')
             <div class="attendance-action__btns">
-                <form action="{{ route('attendance.clock_out') }}" method="POST">
+                <form action="{{ route('attendance.clock_out_at') }}" method="POST">
                     @csrf
                     <button type="submit" class="attendance-btn">退勤</button>
                 </form>
@@ -49,8 +49,22 @@
 </div>
 
 <script>
-    function updateDateTime() {
-        const now = new Date();
+    const serverNow = "{{ now()->format('Y-m-d H:i:s') }}";
+</script>
+
+<script>
+    function createServerBasedNow() {
+        const baseTime = new Date(serverNow);
+        const startTime = new Date();
+        return function () {
+            const now = new Date();
+            const diff = now - startTime;
+            return new Date(baseTime.getTime() + diff);
+        };
+    }
+
+    function updateDateTime(getNow) {
+        const now = getNow();
         const year = now.getFullYear();
         const month = now.getMonth() + 1;
         const day = now.getDate();
@@ -65,8 +79,19 @@
         document.getElementById('current-time').textContent = time;
     }
 
-    updateDateTime();
-    setInterval(updateDateTime, 1000);
+    function startClock() {
+        const getNow = createServerBasedNow();
+        updateDateTime(getNow);
+        const now = getNow();
+        const delay =
+            (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+
+        setTimeout(() => {
+            updateDateTime(getNow);
+            setInterval(() => updateDateTime(getNow), 60000);
+        }, delay);
+    }
+    startClock();
 </script>
 
 @endsection

@@ -15,9 +15,13 @@ class CreateBreakTimesTable extends Migration
                 ->constrained('attendances')
                 ->cascadeOnDelete();
 
+            $table->unsignedTinyInteger('break_no');
+
             $table->time('break_start_at')->nullable();
             $table->time('break_end_at')->nullable();
 
+            $table->unique(['attendance_id', 'break_no']);
+            
             $table->timestamps();
         });
     }

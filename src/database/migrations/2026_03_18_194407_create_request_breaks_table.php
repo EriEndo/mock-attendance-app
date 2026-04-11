@@ -22,8 +22,8 @@ class CreateRequestBreaksTable extends Migration
 
             $table->unsignedTinyInteger('break_no');
 
-            $table->time('requested_break_start')->nullable();
-            $table->time('requested_break_end')->nullable();
+            $table->time('requested_break_start_at')->nullable();
+            $table->time('requested_break_end_at')->nullable();
 
             $table->timestamps();
 

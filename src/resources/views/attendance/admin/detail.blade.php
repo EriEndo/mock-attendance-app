@@ -9,11 +9,18 @@
 
 @section('table')
 
-<form action="{{ route('stamp_correction_request.store', $attendance->id) }}" method="POST">
+<form action="{{ route('admin.attendance.update', $attendance->id) }}" method="POST">
     @csrf
+    @method('PATCH')
+
+    @if (session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
 
     <table class="attendance-detail_table">
-           @error('no_change')
+        @error('no_change')
     <tr>
         <td colspan="2">
             <p class="error-message">{{ $message }}</p>
@@ -106,9 +113,13 @@
         </tr>
     </table>
 
-
+    @if ($pendingRequest)
+        <p class="pending-message">
+            ※承認待ちのため修正はできません。
+        </p>
+    @else
         <button type="submit" class="submit-btn">修正</button>
-
+    @endif
 </form>
 
 @endsection

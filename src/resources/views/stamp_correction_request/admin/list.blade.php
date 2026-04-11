@@ -10,12 +10,12 @@
 @section('table')
 
 <div class="list-tabs">
-    <a href="{{ route('stamp_correction_request.list', ['status' => 'pending']) }}"
+    <a href="{{ route('admin.stamp_correction_request.list', ['status' => 'pending']) }}"
        class="list-tabs__item {{ request('status', 'pending') === 'pending' ? 'active' : '' }}">
         承認待ち
     </a>
 
-    <a href="{{ route('stamp_correction_request.list', ['status' => 'approved']) }}"
+    <a href="{{ route('admin.stamp_correction_request.list', ['status' => 'approved']) }}"
        class="list-tabs__item {{ request('status') === 'approved' ? 'active' : '' }}">
         承認済み
     </a>
@@ -41,7 +41,7 @@
                 <td>{{ $correctionRequest->note }}</td>
                 <td>{{ optional($correctionRequest->created_at)->format('Y/m/d') }}</td>
                 <td>
-                    <a href="{{ route('attendance.detail', $correctionRequest->attendance->id) }}">
+                    <a href="{{ route('admin.stamp_correction_request.detail', $correctionRequest->id) }}">
     詳細
 </a>
                 </td>

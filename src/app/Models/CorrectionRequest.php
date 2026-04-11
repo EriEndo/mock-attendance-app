@@ -10,22 +10,19 @@ class CorrectionRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'attendance_id',
-        'user_id',
-        'status',
-        'requested_clock_in',
-        'requested_clock_out',
-         'note',
-        'admin_id',
-        'approved_at',
-        'rejected_at',
+    'attendance_id',
+    'requested_by',
+    'request_type',
+    'status',
+    'requested_clock_in_at',
+    'requested_clock_out_at',
+    'note',
     ];
 
     protected $casts = [
         'requested_clock_in_at' => 'datetime',
         'requested_clock_out_at' => 'datetime',
         'approved_at' => 'datetime',
-        'rejected_at' => 'datetime',
     ];
 
     public function attendance()
@@ -36,11 +33,6 @@ class CorrectionRequest extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function admin()
-    {
-        return $this->belongsTo(Admin::class);
     }
 
     public function requestBreaks()

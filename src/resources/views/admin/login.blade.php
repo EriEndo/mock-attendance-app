@@ -12,7 +12,7 @@
         <div class="form__title">管理者ログイン</div>
 
         <div class="form__card">
-            <form class="form__form" action="{{ route('admin.login.store') }}" method="post">
+            <form class="form__form" action="{{ route('login') }}" method="post">
                 @csrf
 
                 @if ($errors->has('login_error'))
@@ -43,6 +43,7 @@
                     @enderror
                 </div>
 
+                <input type="hidden" name="login_type" value="admin">
                 <input class="form__btn" type="submit" value="管理者ログインする">
             </form>
         </div>

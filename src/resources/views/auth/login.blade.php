@@ -42,7 +42,7 @@
                     </p>
                     @enderror
                 </div>
-
+                <input type="hidden" name="login_type" value="user">
                 <input class="form__btn" type="submit" value="ログインする">
             </form>
 

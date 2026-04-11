@@ -12,13 +12,13 @@ class RequestBreak extends Model
     protected $fillable = [
         'correction_request_id',
         'break_no',
-        'requested_break_start',
-        'requested_break_end',
+        'requested_break_start_at',
+        'requested_break_end_at',
     ];
 
     protected $casts = [
-        'requested_break_start' => 'datetime',
-        'requested_break_end' => 'datetime',
+        'requested_break_start_at' => 'datetime',
+        'requested_break_end_at' => 'datetime',
     ];
 
     public function correctionRequest()

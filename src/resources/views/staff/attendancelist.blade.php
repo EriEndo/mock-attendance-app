@@ -4,23 +4,23 @@
 <link rel="stylesheet" href="{{ asset('css/components/list.css')}}">
 @endsection
 
-@section('title', '勤怠一覧')
+@section('title', $staff->name. 'さんの勤怠一覧')
 
 @section('table')
 
 <div class="date-pagination">
-    <a href="{{ route('attendance.list', ['month' => $prevMonth]) }}" class="date-pagination__link">
-        ← 前月
-    </a>
+<a href="{{ route('admin.staff.attendance', ['id' => $staff->id, 'month' => $prevMonth]) }}" class="date-pagination__link">
+    ← 前月
+</a>
 
-  <div class="date-pagination__current">
+<div class="date-pagination__current">
     <i class="fa-solid fa-calendar calendar-icon"></i>
     {{ $targetMonth->format('Y/m') }}
 </div>
 
-    <a href="{{ route('attendance.list', ['month' => $nextMonth]) }}" class="date-pagination__link">
-        翌月 →
-    </a>
+<a href="{{ route('admin.staff.attendance', ['id' => $staff->id, 'month' => $nextMonth]) }}" class="date-pagination__link">
+    翌月 →
+</a>
 </div>
 
 <table class="list_table">
@@ -51,4 +51,10 @@
         @endforeach
     </tbody>
 </table>
+
+<form method="GET" action="{{ route('admin.staff.attendance.csv', ['id' => $staff->id]) }}">
+    <input type="hidden" name="month" value="{{ $targetMonth->format('Y-m') }}">
+    <button type="submit" class="submit-btn">CSV出力</button>
+</form>
+
 @endsection

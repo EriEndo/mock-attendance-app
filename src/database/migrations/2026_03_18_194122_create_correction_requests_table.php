@@ -16,28 +16,21 @@ class CreateCorrectionRequestsTable extends Migration
         Schema::create('correction_requests', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('attendance_id')
-                ->constrained('attendances')
-                ->cascadeOnDelete();
+            $table->foreignId('attendance_id')->constrained()->cascadeOnDelete();
 
-            $table->foreignId('user_id')
-                ->constrained()
-                ->cascadeOnDelete();
+            $table->foreignId('requested_by')->constrained('users')->cascadeOnDelete();
+            $table->enum('request_type', ['user_request', 'admin_direct']);
 
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'approved'])->default('pending');
 
-            $table->time('requested_clock_in')->nullable();
-            $table->time('requested_clock_out')->nullable();
+            $table->time('requested_clock_in_at')->nullable();
+            $table->time('requested_clock_out_at')->nullable();
 
-                $table->text('note')->nullable();
+            $table->text('note');
 
-            $table->foreignId('admin_id')
-                ->nullable()
-                ->constrained('admins')
-                ->nullOnDelete();
+            $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('approved_at')->nullable();
 
-            $table->dateTime('approved_at')->nullable();
-            $table->dateTime('rejected_at')->nullable();
 
             $table->timestamps();
         });

@@ -2,7 +2,6 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/components/list.css')}}">
-<link rel="stylesheet" href="{{ asset('css/layouts/list.css') }}">
 @endsection
 
 @section('title', $targetDate->format('Y年n月j日') . 'の勤怠一覧')
