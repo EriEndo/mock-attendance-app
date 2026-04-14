@@ -1,4 +1,3 @@
-
 .index-page {
     margin-top: 100px;
   display: flex;
@@ -73,4 +72,48 @@ background: #000;
     display: flex;
     align-items: center;
     gap:50px;
+}
+
+@media screen and (min-width: 768px) and (max-width: 850px) {
+    .index-page {
+        margin-top: 80px;
+        height: auto;
+        min-height: 300px;
+        align-items: flex-start; 
+        padding-top: 60px;       
+    }
+
+    .index-page__inner {
+        width: 100%;
+        gap: 20px;
+    }
+
+    .badge {
+        font-size: 12px;
+        padding: 4px 12px;
+    }
+
+    #current-date {
+        font-size: 24px;
+    }
+
+    #current-time {
+        font-size: 56px;
+    }
+
+    .attendance-message {
+        font-size: 14px;
+    }
+
+    .attendance-action__btns {
+        gap: 24px;
+    }
+
+    .attendance-btn,
+    .attendance-btn--sub {
+        min-width: 180px;
+        padding: 12px 24px;
+        font-size: 18px;
+        margin-top: 24px;
+    }
 }

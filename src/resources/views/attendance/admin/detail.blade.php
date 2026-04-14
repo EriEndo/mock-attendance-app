@@ -17,16 +17,16 @@
     <div class="alert alert-success">
         {{ session('success') }}
     </div>
-@endif
+    @endif
 
     <table class="attendance-detail_table">
         @error('no_change')
-    <tr>
-        <td colspan="2">
-            <p class="error-message">{{ $message }}</p>
-        </td>
-    </tr>
-    @enderror
+        <tr>
+            <td colspan="2">
+                <p class="error-message">{{ $message }}</p>
+            </td>
+        </tr>
+        @enderror
         <tr class="detail__row">
             <th class="detail__label">名前</th>
             <td class="detail__data">{{ $attendance->user->name }}</td>
@@ -114,11 +114,11 @@
     </table>
 
     @if ($pendingRequest)
-        <p class="pending-message">
-            ※承認待ちのため修正はできません。
-        </p>
+    <p class="pending-message">
+        ※承認待ちのため修正はできません。
+    </p>
     @else
-        <button type="submit" class="submit-btn">修正</button>
+    <button type="submit" class="submit-btn">修正</button>
     @endif
 </form>
 

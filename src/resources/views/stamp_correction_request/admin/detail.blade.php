@@ -43,23 +43,23 @@
         </tr>
 
         @forelse ($correctionRequest->requestBreaks as $index => $break)
-            <tr class="detail__row">
-                <th class="detail__label">
-                    {{ $index === 0 ? '休憩' : '休憩' . ($index + 1) }}
-                </th>
-                <td class="detail__data">
-                    <div class="detail__time-group">
-                        <span>{{ optional($break->requested_break_start_at)->format('H:i') ?? '-' }}</span>
-                        <span>～</span>
-                        <span>{{ optional($break->requested_break_end_at)->format('H:i') ?? '-' }}</span>
-                    </div>
-                </td>
-            </tr>
+        <tr class="detail__row">
+            <th class="detail__label">
+                {{ $index === 0 ? '休憩' : '休憩' . ($index + 1) }}
+            </th>
+            <td class="detail__data">
+                <div class="detail__time-group">
+                    <span>{{ optional($break->requested_break_start_at)->format('H:i') ?? '-' }}</span>
+                    <span>～</span>
+                    <span>{{ optional($break->requested_break_end_at)->format('H:i') ?? '-' }}</span>
+                </div>
+            </td>
+        </tr>
         @empty
-            <tr class="detail__row">
-                <th class="detail__label">休憩</th>
-                <td class="detail__data">-</td>
-            </tr>
+        <tr class="detail__row">
+            <th class="detail__label">休憩</th>
+            <td class="detail__data">-</td>
+        </tr>
         @endforelse
 
         <tr class="detail__row">
@@ -71,14 +71,10 @@
     </table>
 
     @if ($correctionRequest->status === 'approved')
-        <button type="button" class="submit-btn is-disabled" disabled>
-          承認済み
-        </button>
+    <button type="button" class="submit-btn is-disabled" disabled>承認済み</button>
     @else
-        <button type="submit" class="submit-btn">
-            承認
-        </button>
-@endif
+    <button type="submit" class="submit-btn">承認</button>
+    @endif
 </form>
 
 @endsection

@@ -1,3 +1,7 @@
+body{
+    background-color: #fff;
+}
+
 .form__container {
     display: flex;
     flex-direction: column;
@@ -76,3 +80,57 @@
     cursor: pointer;
 }
 
+.auth__link {
+    margin-top: 15px;
+    color: #2779bd;
+    font-size: 11px;
+    text-decoration: none;
+}
+
+@media screen and (min-width: 768px) and (max-width: 850px) {
+    .form__wrapper {
+        width: 70%;
+        margin-top: 60px;
+    }
+
+    .form__card {
+        max-width: none;
+        padding: 30px 20px;
+    }
+
+    .form__form {
+        gap: 24px;
+    }
+
+    .form__title {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .form__label {
+        font-size: 16px;
+        margin-bottom: 6px;
+    }
+
+    .form__input {
+        height: 42px;
+        font-size: 16px;
+        padding: 8px 10px;
+    }
+
+    .form__error {
+        font-size: 12px;
+        min-height: 14px;
+    }
+
+    .form__btn {
+        height: 44px;
+        font-size: 16px;
+        margin-top: 32px;
+    }
+
+    .auth__link {
+        font-size: 13px;
+        margin-top: 18px;
+    }
+}

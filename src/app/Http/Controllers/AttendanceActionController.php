@@ -9,7 +9,7 @@ use App\Models\BreakTime;
 
 class AttendanceActionController extends Controller
 {
-     public function index()
+    public function index()
     {
         $attendance = $this->getTodayAttendance();
 
@@ -18,14 +18,14 @@ class AttendanceActionController extends Controller
         return view('attendance.index', compact('attendance', 'status'));
     }
 
-    
+
     public function clockIn()
     {
-       $attendance = $this->getTodayAttendance();
+        $attendance = $this->getTodayAttendance();
 
         if ($attendance) {
-        return back();
-        }   
+            return back();
+        }
 
         Attendance::create([
             'user_id' => Auth::id(),
@@ -33,12 +33,12 @@ class AttendanceActionController extends Controller
             'clock_in_at' => now(),
         ]);
 
-    return redirect()->route('attendance.index');
-}
+        return redirect()->route('attendance.index');
+    }
 
     public function clockOut()
     {
-       $attendance = $this->getTodayAttendance();
+        $attendance = $this->getTodayAttendance();
 
         if (!$attendance) {
             return back();
@@ -83,8 +83,11 @@ class AttendanceActionController extends Controller
             return back();
         }
 
+        $breakNo = $attendance->breakTimes()->count() + 1;
+
         BreakTime::create([
             'attendance_id' => $attendance->id,
+            'break_no' => $breakNo,
             'break_start_at' => now(),
         ]);
 
@@ -124,7 +127,7 @@ class AttendanceActionController extends Controller
             ->first();
     }
 
-    
+
 
     private function determineStatus($attendance)
     {
@@ -170,5 +173,4 @@ class AttendanceActionController extends Controller
             'class' => 'badge--off',
         ];
     }
-
 }

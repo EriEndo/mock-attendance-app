@@ -13,10 +13,10 @@
         ← 前日
     </a>
 
-  <div class="date-pagination__current">
-    <i class="fa-solid fa-calendar calendar-icon"></i>
-    {{ $targetDate->format('Y/m/d') }}
-</div>
+    <div class="date-pagination__current">
+        <i class="fa-solid fa-calendar calendar-icon"></i>
+        {{ $targetDate->format('Y/m/d') }}
+    </div>
 
     <a href="{{ route('admin.attendance.list', ['date' => $nextDate]) }}" class="date-pagination__link">
         翌日 →
@@ -35,7 +35,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach  ($attendances as $attendance)
+        @foreach ($attendances as $attendance)
         <tr>
             <td>{{ $attendance->user->name }}</td>
             <td>{{ optional($attendance->clock_in_at)->format('H:i') }}</td>

@@ -12,6 +12,10 @@ class LoginResponse implements LoginResponseContract
     {
         $user = Auth::user();
 
+        if ($user instanceof MustVerifyEmail && !$user->hasVerifiedEmail()) {
+        return redirect()->route('verification.notice');
+    }
+
         if ($user->role === 'admin') {
             return redirect()->route('admin.attendance.list');
         }

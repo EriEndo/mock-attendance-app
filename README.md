@@ -1,20 +1,19 @@
-# 実践学習ターム 模擬案件初級\_フリマアプリ
+# 実践学習ターム 模擬案件初級\_勤怠管理アプリ
 
 ## プロジェクト概要
 
-本プロジェクトは、COACHTECH 実践学習タームにおける模擬案件として開発した
-フリマアプリ（coachtech フリマ）です。
-ユーザーが商品を出品・購入できる基本的なフリマサービスを想定し、
-実務を意識した設計・実装を行うことを目的としています。
+本プロジェクトは、COACHTECH 実践学習タームにおける模擬案件として開発した勤怠管理アプリです。
+ユーザーの出退勤や休憩時間を記録・管理し、勤怠修正申請や承認フローを通じて、
+実務に近い勤怠管理の仕組みを再現することを目的としています。。
 
 本アプリでは、以下のような機能を実装しています。
 
 - ユーザー登録・ログイン機能
-- プロフィール登録・編集機能（住所情報含む）
-- 商品の出品・一覧表示・詳細表示
-- 商品へのいいね・コメント機能
-- 商品購入機能（1 商品 1 購入制御、購入済み商品には SOLD 表示）
-- ER 図・テーブル設計を意識したデータベース設計
+- 出勤・退勤打刻機能
+- 休憩の開始・終了記録機能（複数休憩対応）
+- 勤怠一覧・詳細表示機能
+- 勤怠修正申請機能（出退勤・休憩時間の修正）
+- 管理者による申請承認機能
 
 ## 環境構築
 
@@ -23,7 +22,7 @@
 #### 1. リポジトリをクローン
 
 ```bash
-git clone git@github.com:EriEndo/mock-marketplace-app.git
+git clone git@github.com:EriEndo/mock-attendance-app.git
 cd mock-marketplace-app
 ```
 
@@ -73,25 +72,6 @@ php artisan migrate
 php artisan db:seed
 ```
 
-#### 5. 画像アップロード用シンボリックリンク作成
-
-public/storage → storage/app/public のシンボリックリンクが生成されます。
-このリンクは Git に含まれないため、clone した環境では 必ず実行してください。
-
-```bash
-php artisan storage:link
-```
-
-#### 6. Stripe 設定
-
-本アプリでは Stripe を利用した購入処理を実装していますが、Stripe の Secret Key はリポジトリには含めていません。
-テスト環境で購入処理を確認する場合は各自で取得した Stripe のテスト用 Secret Key を.env 内に設定してください。
-※ .env.example にはダミー値のみを記載しています。
-
-```text
-STRIPE_SECRET=your_stripe_secret_key
-```
-
 #### 補足
 
 "The stream or file could not be opened"エラーが発生した場合は、ディレクトリ/ファイルの権限を変更してください
@@ -113,15 +93,22 @@ sudo chmod -R 777 src/storage
 
 ## 開発環境
 
-| 項目       | 内容                   |
-| ---------- | ---------------------- |
-| Web アプリ | http://localhost       |
-| phpMyAdmin | http://localhost:8080/ |
+| 項目                 | 内容                         |
+| -------------------- | ---------------------------- |
+| ユーザー登録画面     | http://localhost/register    |
+| ユーザーログイン画面 | http://localhost/login       |
+| 管理者ログイン画面   | http://localhost/admin/login |
+| phpMyAdmin           | http://localhost:8080/       |
 
 ## ログイン情報
 
-本アプリでは、管理者専用の機能は実装していないため、管理者ユーザーは存在しません。
-一般ユーザーは、下記のユーザーと、シーディング実行時に複数作成されています。
+管理者
+
+- 名前：山田太郎
+- メールアドレス：test@example.com
+- パスワード：password
+
+ユーザー（スタッフ）
 
 - 名前：山田太郎
 - メールアドレス：test@example.com
@@ -129,41 +116,45 @@ sudo chmod -R 777 src/storage
 
 ## URL 一覧
 
-本アプリは「ログイン＝メール認証済み」を前提としています。
-未認証ユーザーがログインした場合は、認証案内ページへリダイレクトされます。
-
-### ゲスト利用（未ログインでも可）
-
-| HTTP | URL             | ルート名     | 説明                     |
-| ---- | --------------- | ------------ | ------------------------ |
-| GET  | /               | items.index  | トップページ（商品一覧） |
-| GET  | /item/{item_id} | items.detail | 商品詳細ページ           |
-| GET  | /search         | items.search | 商品検索                 |
-
-### ログイン必須（メール認証済みユーザー）
-
-| HTTP  | URL                         | ルート名                | 説明               |
-| ----- | --------------------------- | ----------------------- | ------------------ |
-| POST  | /item/{item_id}/comment     | comment.store           | コメント投稿       |
-| POST  | /item/{item_id}/like        | item.like               | いいね追加/解除    |
-| GET   | /sell                       | sell.create             | 出品画面           |
-| POST  | /sell                       | sell.store              | 出品処理           |
-| GET   | /mypage                     | mypage.index            | マイページ         |
-| GET   | /mypage/profile             | mypage.profile.edit     | プロフィール編集   |
-| PATCH | /mypage/profile             | mypage.profile.update   | プロフィール更新   |
-| GET   | /purchase/{item_id}         | purchase.form           | 購入確認画面       |
-| POST  | /purchase/{item_id}         | purchase.execute        | 購入処理           |
-| GET   | /purchase/success/{item_id} | purchase.success        | 購入完了画面       |
-| GET   | /purchase/address/{item_id} | purchase.address.form   | 配送先住所変更画面 |
-| PATCH | /purchase/address/{item_id} | purchase.address.update | 配送先住所更新     |
+本アプリでは、一般ユーザー機能はメール認証済みユーザーのみ利用可能です。  
+未認証ユーザーがログインした場合は、メール認証案内ページへリダイレクトされます。
 
 ### メール認証フロー（未認証ユーザー向け）
 
-| HTTP | URL                              | ルート名            | 説明           | 備考                            |
-| ---- | -------------------------------- | ------------------- | -------------- | ------------------------------- |
-| GET  | /verify-guide                    | verify.guide        | メール認証案内 | auth 必須（ログイン直後に誘導） |
-| POST | /email/verification-notification | verification.send   | 認証メール再送 | auth + throttle                 |
-| GET  | /email/verify/{id}/{hash}        | verification.verify | 認証完了処理   | signed + throttle               |
+| HTTP | URL                              | ルート名            | 説明                 | 備考              |
+| ---- | -------------------------------- | ------------------- | -------------------- | ----------------- |
+| GET  | /email/verify                    | verification.notice | メール認証案内ページ | auth 必須         |
+| POST | /email/verification-notification | verification.send   | 認証メール再送       | auth + throttle   |
+| GET  | /email/verify/{id}/{hash}        | verification.verify | 認証完了処理         | signed + throttle |
+
+### 一般ユーザー機能（ログイン + メール認証必須）
+
+| HTTP | URL                                         | ルート名                       | 説明                         |
+| ---- | ------------------------------------------- | ------------------------------ | ---------------------------- |
+| GET  | /attendance                                 | attendance.index               | 勤怠打刻画面                 |
+| POST | /attendance/clock_in_at                     | attendance.clock_in_at         | 出勤打刻                     |
+| POST | /attendance/clock_out_at                    | attendance.clock_out_at        | 退勤打刻                     |
+| POST | /attendance/break_start                     | attendance.break_start         | 休憩開始                     |
+| POST | /attendance/break_end                       | attendance.break_end           | 休憩終了                     |
+| GET  | /attendance/list                            | attendance.list                | 勤怠一覧                     |
+| GET  | /attendance/detail/{id}                     | attendance.detail              | 勤怠詳細                     |
+| POST | /attendance/{attendance}/correction-request | stamp_correction_request.store | 勤怠修正申請                 |
+| GET  | /stamp_correction_request/list              | stamp_correction_request.list  | 修正申請一覧（一般ユーザー） |
+
+### 管理者機能（ログイン必須）
+
+| HTTP  | URL                                          | ルート名                               | 説明                   |
+| ----- | -------------------------------------------- | -------------------------------------- | ---------------------- |
+| GET   | /admin/login                                 | admin.login                            | 管理者ログイン画面     |
+| GET   | /admin/attendance/list                       | admin.attendance.list                  | 勤怠一覧（管理者）     |
+| GET   | /admin/attendance/{id}                       | admin.attendance.detail                | 勤怠詳細（管理者）     |
+| PATCH | /admin/attendance/{id}                       | admin.attendance.update                | 勤怠修正処理（管理者） |
+| GET   | /admin/staff/list                            | admin.staff.list                       | スタッフ一覧           |
+| GET   | /admin/staff/{id}/attendance                 | admin.staff.attendance                 | スタッフ別勤怠一覧     |
+| GET   | /admin/staff/{id}/attendance/csv             | admin.staff.attendance.csv             | スタッフ別勤怠CSV出力  |
+| GET   | /admin/stamp_correction_request/list         | admin.stamp_correction_request.list    | 修正申請一覧（管理者） |
+| GET   | /admin/stamp_correction_request/{id}         | admin.stamp_correction_request.detail  | 修正申請詳細（管理者） |
+| PATCH | /admin/stamp_correction_request/approve/{id} | admin.stamp_correction_request.approve | 修正申請承認           |
 
 ## ER 図
 
@@ -173,113 +164,76 @@ sudo chmod -R 777 src/storage
 
 ### users テーブル
 
-| カラム名                  | 型              | PK  | NN  |
-| ------------------------- | --------------- | --- | --- |
-| id                        | bigint unsigned | ○   |     |
-| name                      | varchar(255)    |     | ○   |
-| email                     | varchar(255)    |     | ○   |
-| email_verified_at         | timestamp       |     |     |
-| password                  | varchar(255)    |     | ○   |
-| two_factor_secret         | text            |     |     |
-| two_factor_recovery_codes | text            |     |     |
-| two_factor_confirmed_at   | timestamp       |     |     |
-| remember_token            | varchar(100)    |     |     |
-| created_at                | timestamp       |     |     |
-| updated_at                | timestamp       |     |     |
+| カラム名                  | 型                    | PK  | NN  |
+| ------------------------- | --------------------- | --- | --- |
+| id                        | bigint unsigned       | ○   |     |
+| name                      | varchar(255)          |     | ○   |
+| email                     | varchar(255)          |     | ○   |
+| email_verified_at         | timestamp             |     |     |
+| password                  | varchar(255)          |     | ○   |
+| two_factor_secret         | text                  |     |     |
+| two_factor_recovery_codes | text                  |     |     |
+| two_factor_confirmed_at   | timestamp             |     |     |
+| role                      | enum('user', 'admin') |     | ○   |
+| remember_token            | varchar(100)          |     |     |
+| created_at                | timestamp             |     |     |
+| updated_at                | timestamp             |     |     |
 
-### profiles テーブル
+### attendances テーブル
 
-| カラム名      | 型              | PK  | NN  | UQ  | FK       | 補足                                  |
-| ------------- | --------------- | --- | --- | --- | -------- | ------------------------------------- |
-| id            | bigint unsigned | ○   |     |     |          |                                       |
-| user_id       | bigint unsigned |     | ○   | ○   | users.id | 1 ユーザーにつき 1 プロフィールとする |
-| username      | varchar(255)    |     | ○   |     |          |                                       |
-| profile_image | varchar(255)    |     |     |     |          | 任意入力                              |
-| postal_code   | varchar(8)      |     | ○   |     |          |                                       |
-| address       | varchar(255)    |     | ○   |     |          |                                       |
-| building      | varchar(255)    |     |     |     |          | 任意入力                              |
-| created_at    | timestamp       |     |     |     |          |                                       |
-| updated_at    | timestamp       |     |     |     |          |                                       |
+| カラム名             | 型              | PK  | NN  | UQ  | FK       | 補足                       |
+| -------------------- | --------------- | --- | --- | --- | -------- | -------------------------- |
+| id                   | bigint unsigned | ○   |     |     |          |                            |
+| user_id              | bigint unsigned |     | ○   |     | users.id |                            |
+| work_date            | date            |     | ○   |     |          |                            |
+| clock_in_at          | time            |     |     |     |          |                            |
+| clock_out_at         | time            |     |     |     |          |                            |
+| created_at           | timestamp       |     |     |     |          |                            |
+| updated_at           | timestamp       |     |     |     |          |                            |
+| (user_id, work_date) |                 |     |     | ○   |          | 複合 UQ, 1ユーザー1日1勤怠 |
 
-### items テーブル
+### break_times テーブル
 
-| カラム名     | 型              | PK  | NN  | FK            | 補足     |
-| ------------ | --------------- | --- | --- | ------------- | -------- |
-| id           | bigint unsigned | ○   |     |               |          |
-| user_id      | bigint unsigned |     | ○   | users.id      |          |
-| condition_id | bigint unsigned |     | ○   | conditions.id |          |
-| name         | varchar(255)    |     | ○   |               |          |
-| brand        | varchar(255)    |     |     |               | 任意入力 |
-| description  | text            |     | ○   |               |          |
-| price        | int             |     | ○   |               |          |
-| image        | varchar(255)    |     | ○   |               |          |
-| created_at   | timestamp       |     |     |               |          |
-| updated_at   | timestamp       |     |     |               |          |
+| カラム名                  | 型              | PK  | NN  | UQ  | FK             | 補足                           |
+| ------------------------- | --------------- | --- | --- | --- | -------------- | ------------------------------ |
+| id                        | bigint unsigned | ○   |     |     |                |                                |
+| attendance_id             | bigint unsigned |     | ○   |     | attendances.id |                                |
+| break_no                  | tinyint         |     | ○   |     |                |                                |
+| break_start_at            | time            |     |     |     |                |                                |
+| break_end_at              | time            |     |     |     |                |                                |
+| created_at                | timestamp       |     |     |     |                |                                |
+| updated_at                | timestamp       |     |     |     |                |                                |
+| (attendance_id, break_no) |                 |     |     | ○   |                | 複合 UQ, DB レベルで重複を防止 |
 
-### conditions テーブル
+### correction_requests テーブル
 
-| カラム名   | 型              | PK  | NN  |
-| ---------- | --------------- | --- | --- |
-| id         | bigint unsigned | ○   |     |
-| name       | varchar(255)    |     | ○   |
-| created_at | timestamp       |     |     |
-| updated_at | timestamp       |     |     |
+| カラム名               | 型                                   | PK  | NN  | FK             | 補足               |
+| ---------------------- | ------------------------------------ | --- | --- | -------------- | ------------------ |
+| id                     | bigint unsigned                      | ○   |     |                |                    |
+| attendance_id          | bigint unsigned                      |     | ○   | attendances.id |                    |
+| requested_by           | bigint unsigned                      |     | ○   | users.id       |                    |
+| request_type           | enum('user_request', 'admin_direct') |     | ○   |                |                    |
+| status                 | enum('pending', 'approved')          |     | ○   |                | デフォルト:pending |
+| requested_clock_in_at  | time                                 |     |     |                |                    |
+| requested_clock_out_at | time                                 |     |     |                |                    |
+| note                   | text                                 |     | ○   |                |                    |
+| approved_by            | bigint unsigned                      |     |     | users.id       |                    |
+| approved_at            | timestamp                            |     |     |                |                    |
+| created_at             | timestamp                            |     |     |                |                    |
+| updated_at             | timestamp                            |     |     |                |                    |
 
-### categories テーブル
+### request_breaks テーブル
 
-| カラム名   | 型              | PK  | NN  |
-| ---------- | --------------- | --- | --- |
-| id         | bigint unsigned | ○   |     |
-| name       | varchar(255)    |     | ○   |
-| created_at | timestamp       |     |     |
-| updated_at | timestamp       |     |     |
-
-### category_item 中間テーブル
-
-| カラム名               | 型              | PK  | NN  | UQ  | FK            | 補足                           |
-| ---------------------- | --------------- | --- | --- | --- | ------------- | ------------------------------ |
-| id                     | bigint unsigned | ○   |     |     |               |                                |
-| item_id                | bigint unsigned |     | ○   |     | items.id      |                                |
-| category_id            | bigint unsigned |     | ○   |     | categories.id |                                |
-| created_at             | timestamp       |     |     |     |               |                                |
-| updated_at             | timestamp       |     |     |     |               |                                |
-| (item_id, category_id) |                 |     |     | ○   |               | 複合 UQ, DB レベルで重複を防止 |
-
-### likes テーブル
-
-| カラム名           | 型              | PK  | NN  | UQ  | FK       | 補足                                                                              |
-| ------------------ | --------------- | --- | --- | --- | -------- | --------------------------------------------------------------------------------- |
-| id                 | bigint unsigned | ○   |     |     |          |                                                                                   |
-| user_id            | bigint unsigned |     | ○   |     | users.id |                                                                                   |
-| item_id            | bigint unsigned |     | ○   |     | items.id |                                                                                   |
-| created_at         | timestamp       |     |     |     |          |                                                                                   |
-| updated_at         | timestamp       |     |     |     |          |                                                                                   |
-| (user_id, item_id) |                 |     |     | ○   |          | 複合 UQ, DB レベルで重複を防止 (1 ユーザーは同じ 1 商品に 1 回しかいいねできない) |
-
-### comments テーブル
-
-| カラム名   | 型              | PK  | NN  | FK       |
-| ---------- | --------------- | --- | --- | -------- |
-| id         | bigint unsigned | ○   |     |          |
-| user_id    | bigint unsigned |     | ○   | users.id |
-| item_id    | bigint unsigned |     | ○   | items.id |
-| comment    | text            |     | ○   |          |
-| created_at | timestamp       |     |     |          |
-| updated_at | timestamp       |     |     |          |
-
-### purchases テーブル
-
-| カラム名       | 型                      | PK  | NN  | UQ  | FK       | 補足                                  |
-| -------------- | ----------------------- | --- | --- | --- | -------- | ------------------------------------- |
-| id             | bigint unsigned         | ○   | ○   |     |          |                                       |
-| user_id        | bigint unsigned         |     | ○   |     | users.id |                                       |
-| item_id        | bigint unsigned         |     | ○   | ○   | items.id | 1 商品は 1 回しか売れない             |
-| payment_method | enum('konbini', 'card') |     | ○   |     |          | konbini=コンビニ払い, card=カード払い |
-| postal_code    | varchar(8)              |     | ○   |     |          |                                       |
-| address        | varchar(255)            |     | ○   |     |          |                                       |
-| building       | varchar(255)            |     |     |     |          | 任意入力                              |
-| created_at     | timestamp               |     |     |     |          |                                       |
-| updated_at     | timestamp               |     |     |     |          |                                       |
+| カラム名                          | 型              | PK  | NN  | UQ  | FK                     | 補足                           |
+| --------------------------------- | --------------- | --- | --- | --- | ---------------------- | ------------------------------ |
+| id                                | bigint unsigned | ○   |     |     |                        |                                |
+| correction_request_id             | bigint unsigned |     | ○   |     | correction_requests.id |                                |
+| break_no                          | tinyint         |     | ○   |     |                        |                                |
+| requested_break_start_at          | time            |     |     |     |                        |                                |
+| requested_break_end_at            | time            |     |     |     |                        |                                |
+| created_at                        | timestamp       |     |     |     |                        |                                |
+| updated_at                        | timestamp       |     |     |     |                        |                                |
+| (correction_request_id, break_no) |                 |     |     | ○   |                        | 複合 UQ, DB レベルで重複を防止 |
 
 ## データベース初期化について（重要）
 

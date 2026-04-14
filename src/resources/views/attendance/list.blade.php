@@ -13,10 +13,10 @@
         ← 前月
     </a>
 
-  <div class="date-pagination__current">
-    <i class="fa-solid fa-calendar calendar-icon"></i>
-    {{ $targetMonth->format('Y/m') }}
-</div>
+    <div class="date-pagination__current">
+        <i class="fa-solid fa-calendar calendar-icon"></i>
+        {{ $targetMonth->format('Y/m') }}
+    </div>
 
     <a href="{{ route('attendance.list', ['month' => $nextMonth]) }}" class="date-pagination__link">
         翌月 →
@@ -44,7 +44,7 @@
             <td>{{ $day['work_time'] }}</td>
             <td>
                 @if ($day['detail_url'])
-                <a class="admin__detail-btn" href="{{ $day['detail_url'] }}">詳細</a>
+                <a class="adetail-btn" href="{{ $day['detail_url'] }}">詳細</a>
                 @endif
             </td>
         </tr>
