@@ -23,7 +23,7 @@
 
 ```bash
 git clone git@github.com:EriEndo/mock-attendance-app.git
-cd mock-marketplace-app
+cd mock-attendance-app
 ```
 
 #### 2. Docker の起動

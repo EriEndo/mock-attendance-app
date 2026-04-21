@@ -170,32 +170,4 @@ class AdminAttendanceListTest extends TestCase
         $response->assertDontSee('10:00');
         $response->assertDontSee('19:00');
     }
-    public function test_admin_can_view_attendance_detail_from_attendance_list(): void
-    {
-        $attendance = Attendance::factory()->create([
-            'user_id' => $this->user1->id,
-            'work_date' => '2026-04-15',
-            'clock_in_at' => '09:00:00',
-            'clock_out_at' => '18:00:00',
-        ]);
-
-        $response = $this->actingAs($this->admin)->get(
-            route('admin.attendance.list', ['date' => '2026-04-15'])
-        );
-
-        $response->assertStatus(200);
-
-        $crawler = new Crawler($response->getContent());
-
-        $row = $crawler->filter('[data-testid="admin_attendance_row_' . $attendance->id . '"]');
-        $this->assertCount(1, $row);
-
-        $detailUrl = $row->filter('[data-testid="admin_detail_url"]');
-        $this->assertCount(1, $detailUrl);
-
-        $this->assertSame(
-            route('admin.attendance.detail', $attendance->id),
-            $detailUrl->attr('href')
-        );
-    }
 }

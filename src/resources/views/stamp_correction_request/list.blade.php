@@ -9,16 +9,18 @@
 
 @section('table')
 
-<div class="list-tabs">
-    <a href="{{ route('stamp_correction_request.list', ['status' => 'pending']) }}"
-        class="list-tabs__item {{ request('status', 'pending') === 'pending' ? 'active' : '' }}">
-        承認待ち
-    </a>
+<div class="list-sticky-header">
+    <div class="list-tabs">
+        <a href="{{ route('stamp_correction_request.list', ['status' => 'pending']) }}"
+            class="list-tabs__item {{ request('status', 'pending') === 'pending' ? 'active' : '' }}">
+            承認待ち
+        </a>
 
-    <a href="{{ route('stamp_correction_request.list', ['status' => 'approved']) }}"
-        class="list-tabs__item {{ request('status') === 'approved' ? 'active' : '' }}">
-        承認済み
-    </a>
+        <a href="{{ route('stamp_correction_request.list', ['status' => 'approved']) }}"
+            class="list-tabs__item {{ request('status') === 'approved' ? 'active' : '' }}">
+            承認済み
+        </a>
+    </div>
 </div>
 
 <table class="list_table">

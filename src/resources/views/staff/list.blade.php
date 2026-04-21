@@ -18,9 +18,9 @@
     </thead>
     <tbody>
         @foreach ($staffs as $staff)
-        <tr　data-testid="staff_row_{{ $staff->id }}">
-            <td　data-testid="staff_name">{{ $staff->name }}</td>
-            <td　data-testid="staff_email">{{ $staff->email }}</td>
+        <tr data-testid="staff_row_{{ $staff->id }}">
+            <td data-testid="staff_name">{{ $staff->name }}</td>
+            <td data-testid="staff_email">{{ $staff->email }}</td>
             <td><a class="admin__detail-btn" href="{{ route('admin.staff.attendance', $staff->id) }}">詳細</a></td>
         </tr>
         @endforeach
