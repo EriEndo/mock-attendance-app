@@ -47,155 +47,147 @@ class CorrectionRequestStoreRequest extends FormRequest
     }
 
     public function withValidator($validator)
-{
-    $validator->after(function ($validator) {
-        $clockIn = $this->input('clock_in_at');
-        $clockOut = $this->input('clock_out_at');
-        $breaks = $this->input('breaks', []);
-        $note = $this->input('note');
-        $attendance = $this->getAttendance();
-        if (!$attendance) {
-            return;
-        }
-
-        if ($clockIn && $clockOut && $clockIn >= $clockOut) {
-            $validator->errors()->add(
-                'clock_in_at',
-                '出勤時間もしくは退勤時間が不適切な値です'
-            );
-        }
-
-        $validBreaks = [];
-
-        foreach ($breaks as $index => $break) {
-            $breakStart = $break['start'] ?? null;
-            $breakEnd = $break['end'] ?? null;
-
-            // 片方だけ入力
-            if (($breakStart && !$breakEnd) || (!$breakStart && $breakEnd)) {
-                $validator->errors()->add(
-                    "breaks.$index.start",
-                    '休憩時間が不適切な値です'
-                );
-                continue;
+    {
+        $validator->after(function ($validator) {
+            $clockIn = $this->input('clock_in_at');
+            $clockOut = $this->input('clock_out_at');
+            $breaks = $this->input('breaks', []);
+            $note = $this->input('note');
+            $attendance = $this->getAttendance();
+            if (!$attendance) {
+                return;
             }
 
-            // 両方未入力
-            if (!$breakStart && !$breakEnd) {
-                continue;
-            }
-
-            // 開始 >= 終了
-            if ($breakStart >= $breakEnd) {
+            if ($clockIn && $clockOut && $clockIn >= $clockOut) {
                 $validator->errors()->add(
-                    "breaks.$index.start",
-                    '休憩時間が不適切な値です'
-                );
-                continue;
-            }
-
-            // 開始が勤務時間外
-            if (($clockIn && $breakStart < $clockIn) || ($clockOut && $breakStart > $clockOut)) {
-                $validator->errors()->add(
-                    "breaks.$index.start",
-                    '休憩時間が不適切な値です'
+                    'clock_in_at',
+                    '出勤時間もしくは退勤時間が不適切な値です'
                 );
             }
 
-            // 終了が退勤後
-            if ($clockOut && $breakEnd > $clockOut) {
-                $validator->errors()->add(
-                    "breaks.$index.end",
-                    '休憩時間もしくは退勤時間が不適切な値です'
-                );
-            }
+            $validBreaks = [];
 
-            $validBreaks[] = [
-                'index' => $index,
-                'start' => $breakStart,
-                'end' => $breakEnd,
-            ];
-        }
+            foreach ($breaks as $index => $break) {
+                $breakStart = $break['start'] ?? null;
+                $breakEnd = $break['end'] ?? null;
 
-        // 休憩どうしの重なりチェック
-        for ($i = 0; $i < count($validBreaks); $i++) {
-            for ($j = $i + 1; $j < count($validBreaks); $j++) {
-                $first = $validBreaks[$i];
-                $second = $validBreaks[$j];
-
-                if ($first['start'] < $second['end'] && $second['start'] < $first['end']) {
+                if (($breakStart && !$breakEnd) || (!$breakStart && $breakEnd)) {
                     $validator->errors()->add(
-                        "breaks.{$first['index']}.start",
+                        "breaks.$index.start",
                         '休憩時間が不適切な値です'
                     );
+                    continue;
+                }
 
+                if (!$breakStart && !$breakEnd) {
+                    continue;
+                }
+                if ($breakStart >= $breakEnd) {
                     $validator->errors()->add(
-                        "breaks.{$second['index']}.start",
+                        "breaks.$index.start",
+                        '休憩時間が不適切な値です'
+                    );
+                    continue;
+                }
+
+                if (($clockIn && $breakStart < $clockIn) || ($clockOut && $breakStart > $clockOut)) {
+                    $validator->errors()->add(
+                        "breaks.$index.start",
                         '休憩時間が不適切な値です'
                     );
                 }
+
+                if ($clockOut && $breakEnd > $clockOut) {
+                    $validator->errors()->add(
+                        "breaks.$index.end",
+                        '休憩時間もしくは退勤時間が不適切な値です'
+                    );
+                }
+
+                $validBreaks[] = [
+                    'index' => $index,
+                    'start' => $breakStart,
+                    'end' => $breakEnd,
+                ];
             }
-        }
-        // すでにエラーがあるなら「変更なしチェック」はしない
-        if ($validator->errors()->isNotEmpty()) {
-            return;
-        }
 
-        // 元データ
-        $originalClockIn = optional($attendance->clock_in_at)->format('H:i');
-        $originalClockOut = optional($attendance->clock_out_at)->format('H:i');
+            for ($i = 0; $i < count($validBreaks); $i++) {
+                for ($j = $i + 1; $j < count($validBreaks); $j++) {
+                    $first = $validBreaks[$i];
+                    $second = $validBreaks[$j];
 
-        $originalBreaks = $attendance->breakTimes
-            ->map(function ($break) {
-                return [
-                    'start' => optional($break->break_start_at)->format('H:i'),
-                    'end' => optional($break->break_end_at)->format('H:i'),
-                ];
-            })
-            ->filter(function ($break) {
-                return $break['start'] || $break['end'];
-            })
-            ->values()
-            ->toArray();
+                    if ($first['start'] < $second['end'] && $second['start'] < $first['end']) {
+                        $validator->errors()->add(
+                            "breaks.{$first['index']}.start",
+                            '休憩時間が不適切な値です'
+                        );
 
-        $inputBreaks = collect($breaks)
-            ->map(function ($break) {
-                return [
-                    'start' => $break['start'] ?? null,
-                    'end' => $break['end'] ?? null,
-                ];
-            })
-            ->filter(function ($break) {
-                return $break['start'] || $break['end'];
-            })
-            ->values()
-            ->toArray();
+                        $validator->errors()->add(
+                            "breaks.{$second['index']}.start",
+                            '休憩時間が不適切な値です'
+                        );
+                    }
+                }
+            }
 
-        $isSame =
-            $clockIn === $originalClockIn &&
-            $clockOut === $originalClockOut &&
-            $inputBreaks == $originalBreaks;
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
 
-        if ($isSame) {
-            $validator->errors()->add('no_change', '修正箇所がありません');
-        }
-    });
-}
-protected function getAttendance(): ?Attendance
-{
-    $attendance = $this->route('attendance');
 
-    if ($attendance instanceof Attendance) {
-        return $attendance;
+            $originalClockIn = optional($attendance->clock_in_at)->format('H:i');
+            $originalClockOut = optional($attendance->clock_out_at)->format('H:i');
+
+            $originalBreaks = $attendance->breakTimes
+                ->map(function ($break) {
+                    return [
+                        'start' => optional($break->break_start_at)->format('H:i'),
+                        'end' => optional($break->break_end_at)->format('H:i'),
+                    ];
+                })
+                ->filter(function ($break) {
+                    return $break['start'] || $break['end'];
+                })
+                ->values()
+                ->toArray();
+
+            $inputBreaks = collect($breaks)
+                ->map(function ($break) {
+                    return [
+                        'start' => $break['start'] ?? null,
+                        'end' => $break['end'] ?? null,
+                    ];
+                })
+                ->filter(function ($break) {
+                    return $break['start'] || $break['end'];
+                })
+                ->values()
+                ->toArray();
+
+            $isSame =
+                $clockIn === $originalClockIn &&
+                $clockOut === $originalClockOut &&
+                $inputBreaks == $originalBreaks;
+
+            if ($isSame) {
+                $validator->errors()->add('no_change', '修正箇所がありません');
+            }
+        });
     }
+    protected function getAttendance(): ?Attendance
+    {
+        $attendance = $this->route('attendance');
 
-    // admin側（id）
-    $id = $this->route('id');
+        if ($attendance instanceof Attendance) {
+            return $attendance;
+        }
 
-    if ($id) {
-        return Attendance::with('breakTimes')->find($id);
+        $id = $this->route('id');
+
+        if ($id) {
+            return Attendance::with('breakTimes')->find($id);
+        }
+
+        return null;
     }
-
-    return null;
-}
 }

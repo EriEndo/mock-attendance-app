@@ -9,18 +9,18 @@
 @section('table')
 
 <div class="date-pagination">
-<a href="{{ route('admin.staff.attendance', ['id' => $staff->id, 'month' => $prevMonth]) }}" class="date-pagination__link">
-    ← 前月
-</a>
+    <a href="{{ route('admin.staff.attendance', ['id' => $staff->id, 'month' => $prevMonth]) }}" class="date-pagination__link">
+        ← 前月
+    </a>
 
-<div class="date-pagination__current">
-    <i class="fa-solid fa-calendar calendar-icon"></i>
-    {{ $targetMonth->format('Y/m') }}
-</div>
+    <div class="date-pagination__current">
+        <i class="fa-solid fa-calendar calendar-icon"></i>
+        {{ $targetMonth->format('Y/m') }}
+    </div>
 
-<a href="{{ route('admin.staff.attendance', ['id' => $staff->id, 'month' => $nextMonth]) }}" class="date-pagination__link">
-    翌月 →
-</a>
+    <a href="{{ route('admin.staff.attendance', ['id' => $staff->id, 'month' => $nextMonth]) }}" class="date-pagination__link">
+        翌月 →
+    </a>
 </div>
 
 <table class="list_table">
@@ -36,15 +36,15 @@
     </thead>
     <tbody>
         @foreach ($days as $day)
-        <tr class="{{ $day['row_class'] }}">
-            <td>{{ $day['date_label'] }}</td>
-            <td>{{ $day['clock_in_at'] }}</td>
-            <td>{{ $day['clock_out_at'] }}</td>
-            <td>{{ $day['break_time'] }}</td>
-            <td>{{ $day['work_time'] }}</td>
+        <tr class="{{ $day['row_class'] }}" data-testid="staff_attendance_row_{{ $day['work_date'] }}">
+            <td data-testid="staff_work_date">{{ $day['date_label'] }}</td>
+            <td data-testid="staff_clock_in_at">{{ $day['clock_in_at'] }}</td>
+            <td data-testid="staff_clock_out_at">{{ $day['clock_out_at'] }}</td>
+            <td data-testid="staff_break_time">{{ $day['break_time'] }}</td>
+            <td data-testid="staff_work_time">{{ $day['work_time'] }}</td>
             <td>
                 @if ($day['detail_url'])
-                <a class="admin__detail-btn" href="{{ $day['detail_url'] }}">詳細</a>
+                <a class="admin__detail-btn" data-testid="staff_detail_url" href="{{ $day['detail_url'] }}">詳細</a>
                 @endif
             </td>
         </tr>

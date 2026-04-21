@@ -26,13 +26,14 @@ class DateTimeDisplayTest extends TestCase
     {
         $user = $this->createUser();
 
-        $fixedNow = \Carbon\Carbon::create(2026, 4, 14, 9, 30, 0);
-        \Carbon\Carbon::setTestNow($fixedNow);
+        Carbon::setTestNow(Carbon::create(2026, 4, 14, 9, 30, 0));
 
-        $response = $this->actingAs($user)->get('/attendance');
+        $response = $this->actingAs($user)->get(route('attendance.index'));
 
         $response->assertStatus(200);
+        $response->assertSee('2026年4月14日');
+        $response->assertSee('09:30');
 
-        $response->assertSee('2026-04-14 09:30:00');
+        Carbon::setTestNow();
     }
 }

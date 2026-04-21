@@ -130,13 +130,13 @@ input[type="time"] {
     }
 
     .detail__date-group {
-        gap: 40px; /* ←120は広すぎ */
+        gap: 40px;
     }
 
     .detail__time-group,
     .time-group {
         gap: 20px;
-        flex-wrap: wrap; /* ←これ重要 */
+        flex-wrap: wrap; 
     }
 
     .detail__time-group input,
@@ -152,7 +152,7 @@ input[type="time"] {
     }
 
     #note {
-        width: 100%;   /* ←固定やめる */
+        width: 100%;  
         min-height: 100px;
         font-size: 14px;
     }

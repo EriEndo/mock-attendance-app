@@ -34,7 +34,7 @@ class BreakTest extends TestCase
         ]);
     }
 
-    public function test_break_start_button_works_correctly(): void
+    public function test_break_start_is_recorded_and_status_is_updated(): void
     {
         $user = $this->createUser();
 
@@ -80,7 +80,7 @@ class BreakTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function test_break_end_button_works_correctly(): void
+    public function test_break_end_is_recorded_and_status_is_updated(): void
     {
         $user = $this->createUser();
 

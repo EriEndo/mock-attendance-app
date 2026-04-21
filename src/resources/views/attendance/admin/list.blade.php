@@ -36,17 +36,18 @@
     </thead>
     <tbody>
         @foreach ($attendances as $attendance)
-        <tr>
-            <td>{{ $attendance->user->name }}</td>
-            <td>{{ optional($attendance->clock_in_at)->format('H:i') }}</td>
-            <td>{{ optional($attendance->clock_out_at)->format('H:i') }}</td>
-            <td>{{ $attendance->break_time }}</td>
-            <td>{{ $attendance->work_time }}</td>
+        <tr data-testid="admin_attendance_row_{{ $attendance->id }}">
+            <td data-testid="admin_name">{{ $attendance->user->name }}</td>
+            <td data-testid="admin_clock_in_at">{{ optional($attendance->clock_in_at)->format('H:i') }}</td>
+            <td data-testid="admin_clock_out_at">{{ optional($attendance->clock_out_at)->format('H:i') }}</td>
+            <td data-testid="admin_break_time">{{ $attendance->break_time }}</td>
+            <td data-testid="admin_work_time">{{ $attendance->work_time }}</td>
             <td>
-                <a class="admin__detail-btn" href="{{ route('admin.attendance.detail', $attendance->id) }}">詳細</a>
+                <a class="admin__detail-btn" data-testid="admin_detail_url" href="{{ route('admin.attendance.detail', $attendance->id) }}">詳細</a>
             </td>
         </tr>
         @endforeach
+
     </tbody>
 </table>
 @endsection

@@ -33,7 +33,7 @@ class ClockOutTest extends TestCase
         ]);
     }
 
-    public function test_clock_out_button_works_correctly(): void
+    public function test_clock_out_is_recorded_and_status_is_updated(): void
     {
         $user = $this->createUser();
 

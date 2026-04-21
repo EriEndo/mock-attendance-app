@@ -36,15 +36,15 @@
     </thead>
     <tbody>
         @foreach ($days as $day)
-        <tr class="{{ $day['row_class'] }}">
-            <td>{{ $day['date_label'] }}</td>
-            <td>{{ $day['clock_in_at'] }}</td>
-            <td>{{ $day['clock_out_at'] }}</td>
-            <td>{{ $day['break_time'] }}</td>
-            <td>{{ $day['work_time'] }}</td>
+        <tr class="{{ $day['row_class'] }}" data-testid="user_attendance_row_{{ $day['work_date'] }}">
+            <td data-testid="user_date">{{ $day['date_label'] }}</td>
+            <td data-testid="user_clock_in_at">{{ $day['clock_in_at'] }}</td>
+            <td data-testid="user_clock_out_at">{{ $day['clock_out_at'] }}</td>
+            <td data-testid="user_break_time">{{ $day['break_time'] }}</td>
+            <td data-testid="user_work_time">{{ $day['work_time'] }}</td>
             <td>
                 @if ($day['detail_url'])
-                <a class="adetail-btn" href="{{ $day['detail_url'] }}">詳細</a>
+                <a class="adetail-btn" data-testid="user_detail_url" href="{{ $day['detail_url'] }}">詳細</a>
                 @endif
             </td>
         </tr>

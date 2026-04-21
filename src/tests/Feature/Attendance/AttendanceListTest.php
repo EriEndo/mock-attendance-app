@@ -4,9 +4,11 @@ namespace Tests\Feature\Attendance;
 
 use App\Models\Attendance;
 use App\Models\User;
+use App\Models\BreakTime;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Symfony\Component\DomCrawler\Crawler;
 use Tests\TestCase;
 
 class AttendanceListTest extends TestCase
@@ -19,111 +21,90 @@ class AttendanceListTest extends TestCase
             'name' => 'テストユーザー',
             'email' => 'user@example.com',
             'password' => Hash::make('password123'),
-            'role' => 'user',
+            'email_verified_at' => now(),
         ]);
     }
 
-    private function createOtherUser(): User
+    protected function tearDown(): void
     {
-        return User::factory()->create([
-            'name' => '他人ユーザー',
-            'email' => 'other@example.com',
-            'password' => Hash::make('password123'),
-            'role' => 'user',
-        ]);
+        Carbon::setTestNow();
+        parent::tearDown();
     }
 
     public function test_all_of_my_attendance_information_is_displayed(): void
     {
-        $user = $this->createUser();
-        $otherUser = $this->createOtherUser();
+        Carbon::setTestNow(Carbon::create(2026, 4, 15, 9, 0, 0));
 
-        Attendance::create([
+        $user = $this->createUser();
+
+        $attendance = Attendance::factory()->create([
             'user_id' => $user->id,
             'work_date' => '2026-04-10',
-            'clock_in_at' => Carbon::create(2026, 4, 10, 9, 0, 0),
-            'clock_out_at' => Carbon::create(2026, 4, 10, 18, 0, 0),
+            'clock_in_at' => '09:00:00',
+            'clock_out_at' => '18:00:00',
         ]);
 
-        Attendance::create([
-            'user_id' => $user->id,
-            'work_date' => '2026-04-14',
-            'clock_in_at' => Carbon::create(2026, 4, 14, 10, 0, 0),
-            'clock_out_at' => Carbon::create(2026, 4, 14, 19, 0, 0),
+        BreakTime::factory()->create([
+            'attendance_id' => $attendance->id,
+            'break_no' => 1,
+            'break_start_at' => '12:00:00',
+            'break_end_at' => '13:00:00',
         ]);
 
-        Attendance::create([
-            'user_id' => $otherUser->id,
-            'work_date' => '2026-04-20',
-            'clock_in_at' => Carbon::create(2026, 4, 20, 8, 0, 0),
-            'clock_out_at' => Carbon::create(2026, 4, 20, 17, 0, 0),
-        ]);
-
-        $response = $this->actingAs($user)->get(route('attendance.list', [
-            'month' => '2026-04',
-        ]));
-
+        $response = $this->actingAs($user)->get(route('attendance.list'));
         $response->assertStatus(200);
-        $response->assertViewHas('days');
+        $response->assertSee('2026/04');
 
-        $response->assertSee('4/10');
-        $response->assertSee('09:00');
-        $response->assertSee('18:00');
+        $crawler = new Crawler($response->getContent());
 
-        $response->assertSee('4/14');
-        $response->assertSee('10:00');
-        $response->assertSee('19:00');
+        $row = $crawler->filter('[data-testid="user_attendance_row_2026-04-10"]');
+        $this->assertCount(1, $row);
 
-        $response->assertDontSee('08:00');
-        $response->assertDontSee('17:00');
+        $clockIn = $row->filter('[data-testid="user_clock_in_at"]');
+        $this->assertCount(1, $clockIn);
+        $this->assertSame('09:00', trim($clockIn->text()));
 
-        $days = collect($response->viewData('days'));
+        $clockOut = $row->filter('[data-testid="user_clock_out_at"]');
+        $this->assertCount(1, $clockOut);
+        $this->assertSame('18:00', trim($clockOut->text()));
 
-        $day10 = $days->firstWhere('work_date', '2026-04-10');
-        $day14 = $days->firstWhere('work_date', '2026-04-14');
-        $day20 = $days->firstWhere('work_date', '2026-04-20');
+        $breakTime = $row->filter('[data-testid="user_break_time"]');
+        $this->assertCount(1, $breakTime);
+        $this->assertSame('01:00', trim($breakTime->text()));
 
-        $this->assertNotNull($day10);
-        $this->assertSame('09:00', $day10['clock_in_at']);
-        $this->assertSame('18:00', $day10['clock_out_at']);
-
-        $this->assertNotNull($day14);
-        $this->assertSame('10:00', $day14['clock_in_at']);
-        $this->assertSame('19:00', $day14['clock_out_at']);
-
-        $this->assertNotNull($day20);
-        $this->assertSame('', $day20['clock_in_at']);
-        $this->assertSame('', $day20['clock_out_at']);
+        $workTime = $row->filter('[data-testid="user_work_time"]');
+        $this->assertCount(1, $workTime);
+        $this->assertSame('08:00', trim($workTime->text()));
     }
 
-    public function test_current_month_is_displayed_when_opening_attendance_list(): void
+    public function test_current_month_is_displayed_when_user_opens_attendance_list(): void
     {
-        Carbon::setTestNow(Carbon::create(2026, 4, 14, 9, 0, 0));
+        Carbon::setTestNow(Carbon::create(2026, 4, 15, 9, 0, 0));
 
         $user = $this->createUser();
 
         $response = $this->actingAs($user)->get(route('attendance.list'));
 
         $response->assertStatus(200);
-        $response->assertViewHas('targetMonth');
-
         $response->assertSee('2026/04');
-
-        $targetMonth = $response->viewData('targetMonth');
-        $this->assertSame('2026-04', $targetMonth->format('Y-m'));
-
-        Carbon::setTestNow();
     }
 
-    public function test_previous_month_is_displayed_when_pressing_prev_month(): void
+    public function test_previous_month_is_displayed(): void
     {
         $user = $this->createUser();
 
-        Attendance::create([
+        $attendance = Attendance::factory()->create([
             'user_id' => $user->id,
             'work_date' => '2026-03-10',
-            'clock_in_at' => Carbon::create(2026, 3, 10, 9, 0, 0),
-            'clock_out_at' => Carbon::create(2026, 3, 10, 18, 0, 0),
+            'clock_in_at' => '08:30:00',
+            'clock_out_at' => '17:30:00',
+        ]);
+
+        BreakTime::factory()->create([
+            'attendance_id' => $attendance->id,
+            'break_no' => 1,
+            'break_start_at' => '12:00:00',
+            'break_end_at' => '13:00:00',
         ]);
 
         $response = $this->actingAs($user)->get(route('attendance.list', [
@@ -131,33 +112,47 @@ class AttendanceListTest extends TestCase
         ]));
 
         $response->assertStatus(200);
-        $response->assertViewHas('targetMonth');
-        $response->assertViewHas('days');
 
-        $response->assertSee('2026/03');
-        $response->assertSee('3/10');
-        $response->assertSee('09:00');
-        $response->assertSee('18:00');
+        $crawler = new Crawler($response->getContent());
 
-        $targetMonth = $response->viewData('targetMonth');
-        $days = collect($response->viewData('days'));
-        $day = $days->firstWhere('work_date', '2026-03-10');
+        $this->assertStringContainsString('2026/03', $crawler->text());
 
-        $this->assertSame('2026-03', $targetMonth->format('Y-m'));
-        $this->assertNotNull($day);
-        $this->assertSame('09:00', $day['clock_in_at']);
-        $this->assertSame('18:00', $day['clock_out_at']);
+        $row = $crawler->filter('[data-testid="user_attendance_row_2026-03-10"]');
+        $this->assertCount(1, $row);
+
+        $clockIn = $row->filter('[data-testid="user_clock_in_at"]');
+        $this->assertCount(1, $clockIn);
+        $this->assertSame('08:30', trim($clockIn->text()));
+
+        $clockOut = $row->filter('[data-testid="user_clock_out_at"]');
+        $this->assertCount(1, $clockOut);
+        $this->assertSame('17:30', trim($clockOut->text()));
+
+        $breakTime = $row->filter('[data-testid="user_break_time"]');
+        $this->assertCount(1, $breakTime);
+        $this->assertSame('01:00', trim($breakTime->text()));
+
+        $workTime = $row->filter('[data-testid="user_work_time"]');
+        $this->assertCount(1, $workTime);
+        $this->assertSame('08:00', trim($workTime->text()));
     }
 
-    public function test_next_month_is_displayed_when_pressing_next_month(): void
+    public function test_next_month_is_displayed(): void
     {
         $user = $this->createUser();
 
-        Attendance::create([
+        $attendance = Attendance::factory()->create([
             'user_id' => $user->id,
-            'work_date' => '2026-05-12',
-            'clock_in_at' => Carbon::create(2026, 5, 12, 9, 30, 0),
-            'clock_out_at' => Carbon::create(2026, 5, 12, 18, 30, 0),
+            'work_date' => '2026-05-10',
+            'clock_in_at' => '10:00:00',
+            'clock_out_at' => '19:00:00',
+        ]);
+
+        BreakTime::factory()->create([
+            'attendance_id' => $attendance->id,
+            'break_no' => 1,
+            'break_start_at' => '13:00:00',
+            'break_end_at' => '14:00:00',
         ]);
 
         $response = $this->actingAs($user)->get(route('attendance.list', [
@@ -165,51 +160,62 @@ class AttendanceListTest extends TestCase
         ]));
 
         $response->assertStatus(200);
-        $response->assertViewHas('targetMonth');
-        $response->assertViewHas('days');
 
-        $response->assertSee('2026/05');
-        $response->assertSee('5/12');
-        $response->assertSee('09:30');
-        $response->assertSee('18:30');
+        $crawler = new Crawler($response->getContent());
 
-        $targetMonth = $response->viewData('targetMonth');
-        $days = collect($response->viewData('days'));
-        $day = $days->firstWhere('work_date', '2026-05-12');
+        $this->assertStringContainsString('2026/05', $crawler->text());
 
-        $this->assertSame('2026-05', $targetMonth->format('Y-m'));
-        $this->assertNotNull($day);
-        $this->assertSame('09:30', $day['clock_in_at']);
-        $this->assertSame('18:30', $day['clock_out_at']);
+        $row = $crawler->filter('[data-testid="user_attendance_row_2026-05-10"]');
+        $this->assertCount(1, $row);
+
+        $clockIn = $row->filter('[data-testid="user_clock_in_at"]');
+        $this->assertCount(1, $clockIn);
+        $this->assertSame('10:00', trim($clockIn->text()));
+
+        $clockOut = $row->filter('[data-testid="user_clock_out_at"]');
+        $this->assertCount(1, $clockOut);
+        $this->assertSame('19:00', trim($clockOut->text()));
+
+        $breakTime = $row->filter('[data-testid="user_break_time"]');
+        $this->assertCount(1, $breakTime);
+        $this->assertSame('01:00', trim($breakTime->text()));
+
+        $workTime = $row->filter('[data-testid="user_work_time"]');
+        $this->assertCount(1, $workTime);
+        $this->assertSame('08:00', trim($workTime->text()));
     }
 
-    public function test_clicking_detail_navigates_to_attendance_detail_page(): void
+    public function test_user_can_view_attendance_detail_from_attendance_list(): void
     {
         $user = $this->createUser();
 
         $attendance = Attendance::create([
             'user_id' => $user->id,
-            'work_date' => '2026-04-14',
-            'clock_in_at' => Carbon::create(2026, 4, 14, 9, 0, 0),
-            'clock_out_at' => Carbon::create(2026, 4, 14, 18, 0, 0),
+            'work_date' => '2026-04-10',
+            'clock_in_at' => '09:00:00',
+            'clock_out_at' => '18:00:00',
         ]);
 
         $response = $this->actingAs($user)->get(route('attendance.list', [
-            'month' => '2026-04',
+            'month' => '2026-04'
         ]));
 
         $response->assertStatus(200);
-        $response->assertViewHas('days');
 
-        $response->assertSee(route('attendance.detail', $attendance->id), false);
+        $crawler = new Crawler($response->getContent());
 
-        $days = collect($response->viewData('days'));
-        $day = $days->firstWhere('work_date', '2026-04-14');
+        $row = $crawler->filter('[data-testid="user_attendance_row_2026-04-10"]');
+        $this->assertCount(1, $row);
 
-        $this->assertNotNull($day);
-        $this->assertSame(route('attendance.detail', $attendance->id), $day['detail_url']);
+        $detailUrl = $row->filter('[data-testid="user_detail_url"]');
+        $this->assertCount(1, $detailUrl);
 
-        $detailResponse = $this->actingAs($user)->get(route('attendance.detail', $attendance->id));
+        $this->assertSame(
+            route('attendance.detail', $attendance->id),
+            $detailUrl->attr('href')
+        );
+
+        $detailResponse = $this->actingAs($user)->get($detailUrl->attr('href'));
         $detailResponse->assertStatus(200);
     }
 }

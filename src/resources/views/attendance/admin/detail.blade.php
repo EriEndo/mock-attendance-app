@@ -29,12 +29,12 @@
         @enderror
         <tr class="detail__row">
             <th class="detail__label">名前</th>
-            <td class="detail__data">{{ $attendance->user->name }}</td>
+            <td class="detail__data" data-testid="detail_name">{{ $attendance->user->name }}</td>
         </tr>
 
         <tr class="detail__row">
             <th class="detail__label">日付</th>
-            <td class="detail__data">
+            <td class="detail__data" data-testid="detail_date">
                 <div class="detail__date-group">
                     <span>{{ $attendance->work_date->format('Y年') }}</span>
                     <span>{{ $attendance->work_date->format('n月j日') }}</span>
@@ -46,9 +46,9 @@
             <th class="detail__label">出勤・退勤</th>
             <td class="detail__data">
                 <div class="detail__time-group">
-                    <input type="time" name="clock_in_at" value="{{ old('clock_in_at', $attendance->clock_in_at?->format('H:i')) }}">
+                    <input type="time" name="clock_in_at" data-testid="detail_clock_in_at" value="{{ old('clock_in_at', $attendance->clock_in_at?->format('H:i')) }}">
                     <span>～</span>
-                    <input type="time" name="clock_out_at" value="{{ old('clock_out_at', $attendance->clock_out_at?->format('H:i')) }}">
+                    <input type="time" name="clock_out_at" data-testid="detail_clock_out_at" value="{{ old('clock_out_at', $attendance->clock_out_at?->format('H:i')) }}">
                 </div>
 
                 @error('clock_in_at')
@@ -64,9 +64,9 @@
             </th>
             <td class="detail__data">
                 <div class="time-group">
-                    <input type="time" name="breaks[{{ $index }}][start]" value="{{ old("breaks.$index.start", $break->break_start_at?->format('H:i')) }}">
+                    <input type="time" name="breaks[{{ $index }}][start]" data-testid="detail_break_start_at" value="{{ old("breaks.$index.start", $break->break_start_at?->format('H:i')) }}">
                     <span>～</span>
-                    <input type="time" name="breaks[{{ $index }}][end]" value="{{ old("breaks.$index.end", $break->break_end_at?->format('H:i')) }}">
+                    <input type="time" name="breaks[{{ $index }}][end]" data-testid="detail_break_end_at" value="{{ old("breaks.$index.end", $break->break_end_at?->format('H:i')) }}">
                 </div>
 
                 @error("breaks.$index.start")
@@ -113,13 +113,7 @@
         </tr>
     </table>
 
-    @if ($pendingRequest)
-    <p class="pending-message">
-        ※承認待ちのため修正はできません。
-    </p>
-    @else
     <button type="submit" class="submit-btn">修正</button>
-    @endif
 </form>
 
 @endsection

@@ -10,8 +10,12 @@
         <span class="badge {{ $status['class'] }}">{{ $status['label'] }}</span>
 
         <div class="current-datetime">
-            <div id="current-date"></div>
-            <div id="current-time"></div>
+            <div id="current-date">
+                {{ \Carbon\Carbon::now()->locale('ja')->isoFormat('YYYY年M月D日(dd)') }}
+            </div>
+            <div id="current-time">
+                {{ \Carbon\Carbon::now()->format('H:i') }}
+            </div>
         </div>
 
         <div class="attendance-action">
@@ -56,7 +60,7 @@
     function createServerBasedNow() {
         const baseTime = new Date(serverNow);
         const startTime = new Date();
-        return function () {
+        return function() {
             const now = new Date();
             const diff = now - startTime;
             return new Date(baseTime.getTime() + diff);
@@ -71,10 +75,12 @@
         const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
         const weekday = weekdays[now.getDay()];
         const date = `${year}年${month}月${day}日(${weekday})`;
+
         const time = now.toLocaleTimeString('ja-JP', {
             hour: '2-digit',
             minute: '2-digit'
         });
+
         document.getElementById('current-date').textContent = date;
         document.getElementById('current-time').textContent = time;
     }
@@ -82,6 +88,7 @@
     function startClock() {
         const getNow = createServerBasedNow();
         updateDateTime(getNow);
+
         const now = getNow();
         const delay =
             (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
@@ -91,6 +98,7 @@
             setInterval(() => updateDateTime(getNow), 60000);
         }, delay);
     }
+
     startClock();
 </script>
 

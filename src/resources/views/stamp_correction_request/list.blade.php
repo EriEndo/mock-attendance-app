@@ -34,15 +34,13 @@
     </thead>
     <tbody>
         @foreach ($correctionRequests as $correctionRequest)
-        <tr>
-            <td>{{ $correctionRequest->status_label }}</td>
-            <td>{{ $correctionRequest->attendance->user->name }}</td>
-            <td>{{ optional($correctionRequest->attendance->work_date)->format('Y/m/d') }}</td>
-            <td class="note">{{ $correctionRequest->note }}</td>
+        <tr data-testid="user_request_row_{{ $correctionRequest->id }}">
+            <td data-testid="user_request_status">{{ $correctionRequest->status_label }}</td>
+            <td data-testid="user_request_name">{{ $correctionRequest->attendance->user->name }}</td>
+            <td data-testid="user_request_work_date">{{ optional($correctionRequest->attendance->work_date)->format('Y/m/d') }}</td>
+            <td class="note" data-testid="user_request_note">{{ $correctionRequest->note }}</td>
             <td>{{ optional($correctionRequest->created_at)->format('Y/m/d') }}</td>
-            <td>
-                <a href="{{ route('stamp_correction_request.detail', $correctionRequest->id) }}">詳細</a>
-            </td>
+            <td><a href="{{ route('stamp_correction_request.detail', $correctionRequest->id) }}">詳細</a></td>
         </tr>
         @endforeach
     </tbody>
